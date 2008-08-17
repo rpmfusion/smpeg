@@ -1,6 +1,8 @@
+%define _default_patch_fuzz 2
+
 Name:           smpeg
 Version:        0.4.4
-Release:        12%{?dist}
+Release:        13%{?dist}
 Summary:        MPEG library for SDL
 
 Group:          System Environment/Libraries
@@ -92,6 +94,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Aug 17 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 0.4.4-13
+- added _default_patch_fuzz define to make it build for rawhide
+
 * Mon Aug 04 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 0.4.4-12
 - rebuild
 
