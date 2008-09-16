@@ -1,26 +1,25 @@
+%define svn 20080916
+
 Name:           smpeg
-Version:        0.4.4
-Release:        12%{?dist}
+Version:        0.4.5
+Release:        0.2%{?dist}
 Summary:        MPEG library for SDL
 
 Group:          System Environment/Libraries
-License:        LGPL
+License:        LGPLv2+
 URL:            http://icculus.org/smpeg/
-Source0:        ftp://sunsite.dk/pub/os/linux/loki/open-source/smpeg/smpeg-0.4.4.tar.gz
-Patch0:         smpeg-0.4.4-gcc32.patch
-Patch1:         smpeg-0.4.4-fixes.patch
-Patch2:         smpeg-0.4.4-version.patch
-Patch3:         smpeg-0.4.4-cvs-byteorder.patch
-Patch4:         smpeg-0.4.4-cvs-createyuvoverlay.patch
-Patch5:         smpeg-0.4.4-aclocal18.patch
-Patch6:         smpeg-0.4.4-optflags.patch
-#http://cvs.icculus.org/cvs/smpeg/MPEGaudio.h?r1=1.24&r2=1.25&sortby=date&makepatch=1&diff_format=u
-Patch7:         smpeg-0.4.4-gcc41.patch
+Source0:        http://rpm.kwizart.net/fedora/SOURCES/smpeg-%{svn}.tar.gz
+Source10:       smpeg-snapshot.sh
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  SDL-devel
-BuildRequires:  gtk+-devel
-BuildRequires:  automake14
-BuildRequires:  autoconf
+
+BuildRequires:  gtk+-devel >= 1.2.1
+BuildRequires:  libGL-devel, libGLU-devel
+BuildRequires:  SDL-devel >= 1.2.0
+
+# Needed for the snapshot
+#BuildRequires:  automake17
+#BuildRequires:  autoconf
+Requires:       %{name}-libs = %{version}-%{release}
 
 %description
 SMPEG is based on UC Berkeley's mpeg_play software MPEG decoder
@@ -29,10 +28,19 @@ completed the initial work to wed these two projects in order to
 create a general purpose MPEG video/audio player for the Linux OS. 
 
 
+%package libs
+Summary:        Libraries for %{name}
+Group:          System Environment/Libraries
+
+%description libs
+The %{name}-libs package contains shared libraries for %{name}.
+
+
 %package devel
 Summary:        Header files and static libraries for %{name}
 Group:          Development/Libraries
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}-libs = %{version}-%{release}
+Obsoletes:      %{name} < 0.4.5
 Requires:       SDL-devel
 
 %description devel
@@ -41,33 +49,36 @@ This package contains header files and static libraries for %{name}.
 
 %prep
 %setup -q
-%patch0 -p0
-%patch1 -p0
-%patch2 -p1
-%patch3 -p0
-%patch4 -p0
-%patch5 -p0
-%patch6 -p0
-%patch7 -p1
-%{__perl} -pi -e 's|\s*\@SMPEG_RLD_FLAGS\@||' smpeg-config.in
-aclocal-1.4
-automake-1.4 -a
-autoconf
+sed -i -e 's|\@SMPEG_RLD_FLAGS\@||' smpeg-config.in
+
+#aclocal-1.7
+#automake-1.7 --foreign
+#autoconf
 
 
 %build
-%configure --disable-debug --disable-opengl-player --disable-static
+%configure --enable-debug --enable-shared --disable-static --with-PIC \
+  --enable-threaded-system
+
+# remove rpath from libtool
+sed -i.rpath 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
+sed -i.rpath 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+
+# clean unused-direct-shlib-dependencies
+sed -i -e 's! -shared ! -Wl,--as-needed\0!g' libtool
+
 make %{?_smp_mflags}
 
 
+
 %install
-rm -rf $RPM_BUILD_ROOT 
-make install DESTDIR=$RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p -c"
 find $RPM_BUILD_ROOT -type f -name "*.la" -exec rm -f {} ';'
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT 
+rm -rf $RPM_BUILD_ROOT
 
 
 %post -p /sbin/ldconfig
@@ -80,20 +91,30 @@ rm -rf $RPM_BUILD_ROOT
 %doc CHANGES COPYING README TODO
 %{_bindir}/plaympeg
 %{_bindir}/gtv
+%{_bindir}/glmovie
+%{_mandir}/man1/*.gz
+
+%files libs
+%defattr(-,root,root,-)
 %{_libdir}/libsmpeg-0.4.so.*
-%{_mandir}/man[^3]/*
 
 %files devel
 %defattr(-,root,root,-)
 %{_bindir}/smpeg-config
-%{_includedir}/smpeg
+%{_includedir}/smpeg/
 %{_libdir}/libsmpeg.so
 %{_datadir}/aclocal/smpeg.m4
 
 
 %changelog
-* Mon Aug 04 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 0.4.4-12
-- rebuild
+* Tue Sep 16 2008 kwizart < kwizart at gmail.com > - 0.4.5-0.2
+- snapshot made again against 20080916svn (r370) 
+  but removed from release tag since it hasn't changed since the previous version
+- Multilib compliance
+
+* Mon Oct 22 2007 kwizart < kwizart at gmail.com > - 0.4.5-0.1.20071022svn
+- Add smpeg-snashot.sh
+- Update snapshot 0.4.5 20071022svn
 
 * Fri Oct  6 2006 Dams <anvil[AT]livna.org> - 0.4.4-11
 - libsmpeg-0.4.so -> libsmpeg.so
