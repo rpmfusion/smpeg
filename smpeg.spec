@@ -2,7 +2,7 @@
 
 Name:           smpeg
 Version:        0.4.5
-Release:        0.3%{?dist}
+Release:        0.4%{?dist}
 Summary:        MPEG library for SDL
 
 Group:          System Environment/Libraries
@@ -107,6 +107,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Feb 08 2012 Nicolas Chauvet <kwizart@gmail.com> - 0.4.5-0.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Sun Mar 29 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 0.4.5-0.3
 - rebuild for new F11 features
 
