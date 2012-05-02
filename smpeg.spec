@@ -37,14 +37,14 @@ The %{name}-libs package contains shared libraries for %{name}.
 
 
 %package devel
-Summary:        Header files and static libraries for %{name}
+Summary:        Header files and libraries for %{name}
 Group:          Development/Libraries
 Requires:       %{name}-libs = %{version}-%{release}
 Obsoletes:      %{name} < 0.4.5
 Requires:       SDL-devel
 
 %description devel
-This package contains header files and static libraries for %{name}.
+This package contains header files and libraries for %{name}.
 
 
 %prep
